@@ -1,0 +1,34 @@
+# Core
+python-dotenv
+requests
+rich
+
+# GUI
+tk
+Pillow
+PyQt5>=5.15
+
+# Audio
+pygame
+edge-tts
+SpeechRecognition
+pyaudio
+mtranslate
+
+# AI APIs
+openai              # OpenAI (DALL·E)
+replicate           # Replicate API client
+stability-sdk       # Stability AI SDK
+cohere
+groq
+pywhatkit
+AppOpener
+
+# Web
+beautifulsoup4
+googlesearch-python
+
+# File Handling
+python-docx
+python-pptx
+PyPDF2
