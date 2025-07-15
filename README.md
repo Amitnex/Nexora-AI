@@ -28,7 +28,7 @@ Saving frequently ensures the application runs smoothly and reduces potential pe
 To launch the AI system, simply run the main.py file.
 
 # CONTRIBUTE FOR SUPPORT
-As a student i don't have too much support so please if you like this project please contribute at "+91 9956440452"
+As a student i don't have too much support so please if you like this project please contribute at +91 9956440452
 # 📩 SUPPORT & CONTACT
 Thank you for exploring this AI project.
 If you have any queries, feel free to reach out to me at: 
