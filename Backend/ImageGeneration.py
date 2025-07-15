@@ -4,6 +4,13 @@ from dotenv import get_key
 from PIL import Image
 from io import BytesIO
 from time import sleep
+import base64
+
+# === Speak ===
+try:
+    from Backend.TextToSpeech import Speak
+except:
+    def Speak(text): print("[TTS]", text)
 
 # === Save Directory ===
 SAVE_DIR = "Data"
@@ -37,20 +44,24 @@ def openai_generate(prompt):
         image_url = res.json()['data'][0]['url']
         image_data = requests.get(image_url).content
         save_image_from_bytes(image_data, f"{prompt.replace(' ', '_')}_openai.jpg")
+        return True
     else:
         print("OpenAI error:", res.json())
+        return False
 
 # === Hugging Face Image Generation ===
 def huggingface_generate(prompt):
     print("[HuggingFace] Generating image...")
-    url = "https://api-inference.huggingface.co/models/stabilityai/sdxl-turbo"
+    url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
     headers = {"Authorization": f"Bearer {HuggingFace_API}"}
     payload = {"inputs": prompt}
     res = requests.post(url, headers=headers, json=payload)
     if res.status_code == 200 and "image" in res.headers.get("content-type", ""):
         save_image_from_bytes(res.content, f"{prompt.replace(' ', '_')}_hf.jpg")
+        return True
     else:
         print("HuggingFace error:", res.text)
+        return False
 
 # === Replicate Image Generation ===
 def replicate_generate(prompt):
@@ -64,20 +75,24 @@ def replicate_generate(prompt):
         "version": "cc201f83ebc43eb9c47aa2a632f243e9a6f46c65bdc0dcb4f1a5761e3f0d315e",
         "input": {"prompt": prompt}
     }
-    res = requests.post(url, json=payload, headers=headers)
-    if res.status_code == 201:
-        prediction_url = res.json()["urls"]["get"]
-        for _ in range(10):
-            prediction = requests.get(prediction_url, headers=headers).json()
-            if prediction["status"] == "succeeded":
-                image_url = prediction["output"][0]
-                image_data = requests.get(image_url).content
-                save_image_from_bytes(image_data, f"{prompt.replace(' ', '_')}_replicate.jpg")
-                return
-            sleep(3)
-        print("Replicate timeout or failure.")
-    else:
-        print("Replicate error:", res.text)
+    try:
+        res = requests.post(url, json=payload, headers=headers, timeout=30)
+        if res.status_code == 201:
+            prediction_url = res.json()["urls"]["get"]
+            for _ in range(10):
+                prediction = requests.get(prediction_url, headers=headers, timeout=10).json()
+                if prediction["status"] == "succeeded":
+                    image_url = prediction["output"][0]
+                    image_data = requests.get(image_url).content
+                    save_image_from_bytes(image_data, f"{prompt.replace(' ', '_')}_replicate.jpg")
+                    return True
+                sleep(3)
+            print("Replicate timeout or failure.")
+        else:
+            print("Replicate error:", res.text)
+    except Exception as e:
+        print("Replicate failed:", e)
+    return False
 
 # === Stability AI Image Generation ===
 def stability_generate(prompt):
@@ -97,39 +112,64 @@ def stability_generate(prompt):
     }
     res = requests.post(url, json=payload, headers=headers)
     if res.status_code == 200:
-        image_data = BytesIO(bytes(res.json()["artifacts"][0]["base64"], 'utf-8'))
-        save_image_from_bytes(image_data, f"{prompt.replace(' ', '_')}_stability.jpg")
+        image_base64 = res.json()["artifacts"][0]["base64"]
+        image_bytes = base64.b64decode(image_base64)
+        save_image_from_bytes(image_bytes, f"{prompt.replace(' ', '_')}_stability.jpg")
+        return True
     else:
         print("Stability AI error:", res.text)
+        return False
+
+# === Beep 5 times if all fail ===
+def beep_failure_alert():
+    for _ in range(5):
+        print('\a', end='', flush=True)
+        sleep(0.5)
 
 # === Run all available image generation APIs ===
 def generate_all_images(prompt):
-    try: openai_generate(prompt)
+    success = False
+    try: success |= openai_generate(prompt)
     except Exception as e: print("OpenAI failed:", e)
-    try: huggingface_generate(prompt)
+    try: success |= huggingface_generate(prompt)
     except Exception as e: print("HuggingFace failed:", e)
-    try: replicate_generate(prompt)
+    try: success |= replicate_generate(prompt)
     except Exception as e: print("Replicate failed:", e)
-    try: stability_generate(prompt)
+    try: success |= stability_generate(prompt)
     except Exception as e: print("Stability AI failed:", e)
 
-# === Main execution when run by subprocess (from main.py) ===
+    if success:
+        Speak("Image created, Boss")
+    else:
+        print("[❌] All image generation APIs failed!")
+        beep_failure_alert()
+
+# === Main execution ===
 if __name__ == "__main__":
     try:
         path = "Frontend/Files/ImageGeneration.data"
+        prompt = ""
+
         if os.path.exists(path):
             with open(path, "r", encoding='utf-8') as file:
                 content = file.read().strip()
                 if content and "," in content:
-                    prompt, flag = content.split(",", 1)
+                    prompt_part, flag = content.split(",", 1)
                     if flag.strip().lower() == "true":
-                        print("Generating image for prompt:", prompt.strip())
-                        generate_all_images(prompt.strip())
-                    else:
-                        print("Flag is not true. Skipping generation.")
-                else:
-                    print("Invalid content in ImageGeneration.data.")
+                        prompt = prompt_part.strip()
+
+        if not prompt:
+            prompt = input("Enter prompt >>> ").strip()
+
+        if prompt:
+            print("Generating image for prompt:", prompt)
+            generate_all_images(prompt)
+
+            # ✅ Auto-reset the flag after generation
+            if os.path.exists(path):
+                with open(path, "w", encoding='utf-8') as file:
+                    file.write(f"{prompt},false")
         else:
-            print("ImageGeneration.data file not found.")
+            print("No prompt provided. Exiting.")
     except Exception as e:
         print("Fatal error in ImageGeneration.py:", e)
