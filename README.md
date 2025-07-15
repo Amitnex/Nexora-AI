@@ -1,21 +1,37 @@
-# SOFTWARE INSTALLATION
-Dear friends, you will need to install some applications in order to run this AI :-
-I. Python 3.10.10
-II. VS Code in python language 
-Make sure everything's setup has been done correctly.
+# 🛠 SOFTWARE REQUIREMENTS
+To successfully run this AI project, please ensure the following software is installed:
 
-# API KEY CHANGES
-In the .env file there are many API have been used in order to make our AI more intelligent, make sure to replace the API key's with your actual keys.
+Python version 3.10.10
 
-# SETTING UP .venv
-Do not create __pycache__ folder inside any folder it will be created automatically when you will install a virtual environment in you program(.venv).
-To create a .venv click Ctrl+' in your VS Code, terminal opens type there "python -m venv .venv", this will create your virtual environment in your main project folder.
+Visual Studio Code with the Python extension
 
-# SAVING THE FILES
-After putting codes in files, open those files one by one and click Ctrl+S. This will save your program so that there will not be load on your main program.
-Running Main.py will launch your AI
+Confirm that all installations and configurations are completed correctly before proceeding.
 
-# ASKING DOUBTS
-I hope friends you like this project, if you have any queries you can ask on "amitsharmaji888140@gmail.com"
-Soon I will launch this project as a desktop app with more available features.
-Thanks...
+# 🔐 API KEY CONFIGURATION
+The .env file contains multiple API keys that enable the AI to perform advanced functions.
+Please ensure you replace the placeholder API keys with your own valid credentials for each service.
+
+# ⚙️ SETTING UP THE VIRTUAL ENVIRONMENT (.venv)
+Do not manually create a __pycache__ folder—this will be automatically generated when the virtual environment is installed.
+
+To set up the virtual environment:
+Open the terminal in VS Code by pressing Ctrl + '.
+Enter the following command in terminal:
+
+python -m venv .venv
+This will create a .venv directory in the root of your project, containing all necessary dependencies.
+
+# 💾 FILE MANAGEMENT
+After inserting or editing any code, press Ctrl + S to save your changes.
+Saving frequently ensures the application runs smoothly and reduces potential performance issues.
+
+To launch the AI system, simply run the main.py file.
+
+# 📩 SUPPORT & CONTACT
+Thank you for exploring this AI project.
+If you have any queries, feel free to reach out to me at: 
+📧 amitsharmaji888140@gmail.com
+
+A desktop application version of this project with extended features is currently in development and will be released soon.
+
+We appreciate your interest!
